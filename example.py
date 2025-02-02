@@ -14,7 +14,7 @@ img = Image.open(urlopen(
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Load the pre-trained KAT model
-model = timm.create_model('hf_hub:adamdad/kat_tiny_patch16_224', pretrained=True)
+model = timm.create_model('hf_hub:adamdad/kat_tiny_patch16_224.vitft', pretrained=True)
 model = model.to(device)
 model = model.eval()
 
