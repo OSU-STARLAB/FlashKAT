@@ -26,13 +26,11 @@ Yes, I kan!
 
 For more technical details, please refer to our ICLR'25 paper.
 
-> **Kolmogorov–Arnold Transformer**
-
+> **Kolmogorov–Arnold Transformer** 
 > 📝[[Paper](https://arxiv.org/abs/2409.10594)] </>[[code](https://github.com/Adamdad/kat)]  </>[[Trition/CUDA kernel](https://github.com/Adamdad/rational_kat_cu)] 
-
 > Xingyi Yang, Xinchao Wang
-
 > National University of Singapore
+> in ICLR'25
 
 ### 🔑 Key Insight:
 
