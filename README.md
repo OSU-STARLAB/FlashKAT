@@ -47,7 +47,7 @@ Vanilla ViT + KAN struggle to scale effectively. We introduce the KAT model, whi
 
 ### ✅ Updates
 - [x] Release the KAT paper, CUDA implementation and IN-1k training code.
-- [x] 🎉🎉🎉🎉 Triton Implementation, on 1D and 2D tasks. This is much easier to install than the CUDA version.
+- [x] 🎉🎉🎉🎉 Triton Implementation, on 1D and 2D tasks. This is much easier to install than the CUDA version. Please See [https://github.com/Adamdad/rational_kat_cu](https://github.com/Adamdad/rational_kat_cu).
 - [ ] KAT Detection and segmentation code.
 - [ ] KAT on NLP tasks.
 
