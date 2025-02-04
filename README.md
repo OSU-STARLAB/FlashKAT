@@ -13,6 +13,9 @@
       <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-1.x%20%7C%202.x-673ab7.svg" alt="Tested PyTorch Versions"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-4caf50.svg" alt="License"></a>
 </p>
+<p align="center">
+<b>ICLR 2025</b>
+</p>
 
 <p align="center">
 <img src="assets/KAT.png" width="300"> <br>
@@ -21,13 +24,15 @@ Yes, I kan!
 
 🎉 This is a PyTorch/GPU implementation of the paper **Kolmogorov–Arnold Transformer (KAT)**, which replace the MLP layers in transformer with KAN layers.
 
-**Kolmogorov–Arnold Transformer**
+For more technical details, please refer to our ICLR'25 paper.
 
- 📝[[Paper](https://arxiv.org/abs/2409.10594)] </>[[code](https://github.com/Adamdad/kat)]  </>[[CUDA kernel](https://github.com/Adamdad/rational_kat_cu)] 
+> **Kolmogorov–Arnold Transformer**
 
-Xingyi Yang, Xinchao Wang
+> 📝[[Paper](https://arxiv.org/abs/2409.10594)] </>[[code](https://github.com/Adamdad/kat)]  </>[[Trition/CUDA kernel](https://github.com/Adamdad/rational_kat_cu)] 
 
-National University of Singapore
+> Xingyi Yang, Xinchao Wang
+
+> National University of Singapore
 
 ### 🔑 Key Insight:
 
@@ -44,6 +49,7 @@ Vanilla ViT + KAN struggle to scale effectively. We introduce the KAT model, whi
 
 ### ✅ Updates
 - [x] Release the KAT paper, CUDA implementation and IN-1k training code.
+- [x] 🎉🎉🎉🎉 Triton Implementation, on 1D and 2D tasks. This is much easier to install than the CUDA version.
 - [ ] KAT Detection and segmentation code.
 - [ ] KAT on NLP tasks.
 
@@ -173,12 +179,12 @@ We extend our gratitude to the authors of [rational_activations](https://github.
 ## 📚 Bibtex
 If you use this repository, please cite:
 ```bibtex
-@misc{yang2024kat,
-    title={Kolmogorov–Arnold Transformer},
-    author={Xingyi Yang and Xinchao Wang},
-    year={2024},
-    eprint={2409.10594},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@inproceedings{
+  yang2025kolmogorovarnold,
+  title={Kolmogorov-Arnold Transformer},
+  author={Xingyi Yang, Xinchao Wang},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+  url={https://openreview.net/forum?id=BCeock53nt}
 }
 ```
