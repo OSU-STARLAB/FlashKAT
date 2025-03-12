@@ -36,7 +36,8 @@ __all__ = ['KAT']  # model_registry will add each entrypoint fn to this
 
 _logger = logging.getLogger(__name__)
 
-
+import sys
+sys.path.insert(0, 'rational_kat_cu')
 from kat_rational import KAT_Group
 
 
@@ -115,8 +116,11 @@ class KAN(nn.Module):
             drop=0.,
             use_conv=False,
             act_init="gelu",
+            device=None
     ):
         super().__init__()
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         bias = to_2tuple(bias)
@@ -124,10 +128,10 @@ class KAN(nn.Module):
         linear_layer = partial(nn.Conv2d, kernel_size=1) if use_conv else nn.Linear
 
         self.fc1 = linear_layer(in_features, hidden_features, bias=bias[0])
-        self.act1 = KAT_Group(mode="identity")
+        self.act1 = KAT_Group(mode="identity", device=device)
         self.drop1 = nn.Dropout(drop_probs[0])
         self.norm = norm_layer(hidden_features) if norm_layer is not None else nn.Identity()
-        self.act2 = KAT_Group(mode=act_init)
+        self.act2 = KAT_Group(mode=act_init, device=device)
         self.fc2 = linear_layer(hidden_features, out_features, bias=bias[1])
         self.drop2 = nn.Dropout(drop_probs[1])
 
