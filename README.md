@@ -134,8 +134,11 @@ We extend our gratitude to the authors of [KAT](https://github.com/Adamdad/kat) 
 ## 📚 Bibtex
 If you use this repository, please cite the our work:
 ```bibtex
-@inproceedings{
-
+@article{raffel2025flashkat,
+  title={FlashKAT: Understanding and Addressing Performance Bottlenecks in the Kolmogorov-Arnold Transformer},
+  author={Raffel, Matthew and Chen, Lizhong},
+  journal={arXiv preprint arXiv:2505.13813},
+  year={2025}
 }
 ```
 
