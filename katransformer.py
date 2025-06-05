@@ -36,9 +36,9 @@ __all__ = ['KAT']  # model_registry will add each entrypoint fn to this
 
 _logger = logging.getLogger(__name__)
 
-import sys
-sys.path.insert(0, 'rational_kat_cu')
-from kat_rational import KAT_Group
+
+from rational_kat import KAT_Group
+from rational_kat import FlashKAT_Group
 
 
 def calculate_gain(nonlinearity, param=None):
@@ -116,11 +116,9 @@ class KAN(nn.Module):
             drop=0.,
             use_conv=False,
             act_init="gelu",
-            device=None
+            **kwargs
     ):
         super().__init__()
-        if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         bias = to_2tuple(bias)
@@ -128,11 +126,17 @@ class KAN(nn.Module):
         linear_layer = partial(nn.Conv2d, kernel_size=1) if use_conv else nn.Linear
 
         self.fc1 = linear_layer(in_features, hidden_features, bias=bias[0])
-        self.act1 = KAT_Group(mode="identity", device=device)
+        if act_layer == KAT_Group:
+            self.act1 = act_layer(mode="identity")
+        else:
+            self.act1 = act_layer(in_features = in_features, mode='identity', **kwargs)
         self.drop1 = nn.Dropout(drop_probs[0])
         self.norm = norm_layer(hidden_features) if norm_layer is not None else nn.Identity()
-        self.act2 = KAT_Group(mode=act_init, device=device)
-        self.fc2 = linear_layer(hidden_features, out_features, bias=bias[1])
+        if act_layer == KAT_Group:
+            self.act2 = act_layer(mode=act_init)
+        else:
+            self.act2 = act_layer(in_features = hidden_features, mode='swish', **kwargs)
+        self.fc2 = linear_layer(hidden_features, out_features, bias=bias[1]) 
         self.drop2 = nn.Dropout(drop_probs[1])
 
     def forward(self, x):
@@ -301,6 +305,7 @@ class Block(nn.Module):
             norm_layer: nn.Module = nn.LayerNorm,
             mlp_layer: nn.Module = KAN,
             act_init: str = 'gelu',
+            **kwargs,
     ) -> None:
         super().__init__()
         self.norm1 = norm_layer(dim)
@@ -323,6 +328,7 @@ class Block(nn.Module):
             act_layer=act_layer,
             drop=proj_drop,
             act_init=act_init,
+            **kwargs
         )
         self.ls2 = LayerScale(dim, init_values=init_values) if init_values else nn.Identity()
         self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -378,6 +384,7 @@ class KATVisionTransformer(nn.Module):
             block_fn: Type[nn.Module] = Block,
             mlp_layer: Type[nn.Module] = KAN,
             act_init: str = 'gelu',
+            **kwargs,
     ) -> None:
         """
         Args:
@@ -476,6 +483,7 @@ class KATVisionTransformer(nn.Module):
                 act_layer=act_layer,
                 mlp_layer=mlp_layer,
                 act_init=act_init,
+                **kwargs
             )
             for i in range(depth)])
         self.feature_info = [
@@ -1234,30 +1242,6 @@ def kat_tiny_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransfo
     return model
 
 @register_model
-def kat_tiny_gelu_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
-    """ KAT-Tiny with rational activations (ViT-S/16)
-    """
-    model_args = dict(patch_size=16, embed_dim=192, depth=12, num_heads=3, 
-                      act_layer=KAT_Group, 
-                      act_init='gelu',
-                      mlp_layer=KAN, 
-                      weight_init="kan_mimetic")
-    model = _create_kat_transformer('kat_tiny_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
-    return model
-
-@register_model
-def kat_tiny_swish_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
-    """ KAT-Tiny with rational activations (ViT-Ti/16)
-    """
-    model_args = dict(patch_size=16, embed_dim=192, depth=12, num_heads=3, 
-                      act_layer=KAT_Group, 
-                      act_init='swish',
-                      mlp_layer=KAN, 
-                      weight_init="kan_mimetic")
-    model = _create_kat_transformer('kat_tiny_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
-    return model
-
-@register_model
 def kat_small_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
     """ KAT-Small with rational activations (ViT-S/16)"""
     model_args = dict(patch_size=16, 
@@ -1269,31 +1253,6 @@ def kat_small_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransf
                       mlp_layer=KAN, 
                       weight_init="kan_mimetic")
     model = _create_kat_transformer('kat_small_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
-    return model
-
-@register_model
-def kat_small_gelu_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
-    """ KAT-Small with rational activations (ViT-S/16)"""
-    model_args = dict(patch_size=16, 
-                      embed_dim=384, 
-                      depth=12, 
-                      num_heads=6, 
-                      act_init='gelu',
-                      act_layer=KAT_Group, 
-                      mlp_layer=KAN, weight_init="kan_mimetic") # , init_values=1e-5
-    model = _create_kat_transformer('kat_small_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
-    return model
-
-@register_model
-def kat_small_swish_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
-    """ KAT-Small with rational activations (ViT-S/16)"""
-    model_args = dict(patch_size=16, 
-                      embed_dim=384, 
-                      depth=12, num_heads=6, 
-                      act_init='swish',
-                      act_layer=KAT_Group, 
-                      mlp_layer=KAN, weight_init="kan_mimetic") # , init_values=1e-5
-    model = _create_kat_transformer('kat', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
 
 @register_model
@@ -1310,22 +1269,41 @@ def kat_base_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransfo
     model = _create_kat_transformer('kat_base_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
 
+# FlashKAT
 @register_model
-def kat_base_gelu_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
-    """ KAT-Base with rational activations (ViT-B/16)"""
-    model_args = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, 
-                      act_layer=KAT_Group, 
+def flash_kat_tiny_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
+    """ KAT-Tiny with rational activations (ViT-S/16)
+    """
+    model_args = dict(patch_size=16, embed_dim=192, depth=12, num_heads=3, 
+                      act_layer=FlashKAT_Group, 
+                      act_init='swish',
                       mlp_layer=KAN, 
-                      act_init='gelu',
                       weight_init="kan_mimetic")
-    model = _create_kat_transformer('kat_base_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
+    model = _create_kat_transformer('kat_tiny_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
     return model
 
 @register_model
-def kat_base_swish_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
+def flash_kat_small_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
+    """ KAT-Small with rational activations (ViT-S/16)"""
+    model_args = dict(patch_size=16, 
+                      embed_dim=384, 
+                      depth=12, 
+                      num_heads=6, 
+                      act_init='swish',
+                      act_layer=FlashKAT_Group, 
+                      mlp_layer=KAN, 
+                      weight_init="kan_mimetic")
+    model = _create_kat_transformer('kat_small_patch16_224', pretrained=pretrained, **dict(model_args, **kwargs))
+    return model
+
+@register_model
+def flash_kat_base_patch16_224(pretrained: bool = False, **kwargs) -> KATVisionTransformer:
     """ KAT-Base with rational activations (ViT-B/16)"""
-    model_args = dict(patch_size=16, embed_dim=768, depth=12, num_heads=12, 
-                      act_layer=KAT_Group, 
+    model_args = dict(patch_size=16, 
+                      embed_dim=768, 
+                      depth=12, 
+                      num_heads=12, 
+                      act_layer=FlashKAT_Group, 
                       mlp_layer=KAN, 
                       act_init='swish',
                       weight_init="kan_mimetic")
